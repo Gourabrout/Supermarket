@@ -33,7 +33,7 @@ class ItemFactory
                         $item->setSpecialPrice($specialOfferCount, $specialOfferPrice);
                     } else {
                         $specialOfferSKU = (string) $specialOffer[0];
-                        $item->setCombineSpecialPrice($specialOfferCount, $specialOfferPrice);
+                        $item->setCombineSpecialPrice($specialOfferSKU, $specialOfferPrice);
                     }
                     
                 }

@@ -12,7 +12,7 @@ $order        = $inputService->getOrder();
 
 $itemFactory = new ItemFactory;
 $supermarketController    = new SupermarketController($itemFactory);
-$supermarketController->setProducts($itemsData);
+$supermarketController->setItems($itemsData);
 $supermarketController->setOrder($order);
 
 $outputService = new OutputService;

@@ -29,7 +29,7 @@ class ItemWithSpecialPrice extends Item implements ItemInterface
      *
      * @return void
      */
-    public function setCombineSpecialPrice($SKU, $price)
+    public function setCombineSpecialPrice(string $SKU, int $price)
     {
         $this->combineSpecialPrice[$SKU] = $price;
     }
