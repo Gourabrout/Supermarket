@@ -93,3 +93,150 @@ $outputService->print($supermarketController->calculateTotalPrice());
 First we `new` the `InputService` class and get the `order` and `itemsData` from it.
 Then we `new` the `ItemFactory` and inject it to the new SupermarketController class, and SupermarketController class use it to make the new item objects. 
 Then we use `setItems` and `setOrder` to set the itemss and order data and finally with `calculateTotalPrice` we calculate the price and show it with help of `print` in `OutputService`.
+
+### How can I run it
+I define a `Dockerfile` for the project and you can use it like this: <br>
+Go to the root of the project (where you can see `Dockerfile`) and then run this commands
+```
+docker build -t supermarket .
+docker run -it --rm supermarket
+```
+And now you need to set the inputs, for example like this
+```
+3
+A 20
+B 15 2-25
+C 25 2-45 A-10
+A A A B B C C C C C C
+```
+It means you have three items and the price of `A` is `20` and the price of `B` is `15` and if you buy `2` numbers of `B` you can pay `25` instead of `30` and the price of `C` is `25` and if you buy `2` numbers of `C` you can pay `45` instead of `50` and if you buy a 'A' with 'C' you can pay `10` instead of `25` . <br>
+And the end line also show you the order, in this case you buy `3` of `A` and `2` of `B` and `6` of `C`. <br>
+(If you want for example read the Service from the file you can just make the new InputService class and implement it from InputInterface and just use it easily, because that part is completly separated from the other part of the code, also you can do it with outputService)
+#### Output
+```
+185
+```
+And your output will be the total price
+
+#### Multi offers
+you can also define multi special offers and the code support it <br>
+you should define it like this
+```
+A 10 3-29 6-55 C-5
+```
+The structure `a-b` means if you buy `a` count of procuts you can pay `b`<br>
+The structure `C-5` means if you buy `A` with `C` then you will pay `5` for each `A` 
+
+
+#### Unit tests
+I use `phpunit` for writing unit tests
+```
+PHPUnit 9.5.20 #StandWithUkraine
+
+............                                                      12 / 12 (100%)
+
+Time: 00:00.014, Memory: 6.00 MB
+
+OK (12 tests, 20 assertions)
+
+```
+And you can run it with this command
+```
+docker run -it --rm supermarket vendor/bin/phpunit
+```
+
+#### Feature tests
+I use behat for writing the feature test and I define some scenarios and test the all project functionality in it <br> My scenarios are like this
+```
+ Scenario: Buy itemWithSpecialPrices
+        Given there is one item with name A and cost 15
+        Given there is one item with name B and cost 25
+        Given there is one special price on item A and if you buy 2 of them you should pay 25
+        Given there is one special price on item A and if you buy 3 of them you should pay 35
+        Given there is one special price on item B and if you buy 2 of them you should pay 45
+        And  our order is like this AAABBAABB
+        And  set items in supermarket
+        Then Our total cost should be 150
+```
+And you can run these tests with this command
+```
+docker run -it --rm supermarket vendor/bin/behat
+```
+output
+```
+Feature: Supermarket
+    In order to buy some items and calculate the price of them
+    And I need to first define some items
+    And I need to create an order
+    Then I can get the total price
+
+  Scenario: Buy items                               
+    Given there is one item with name A and cost 20 
+    Given there is one item with name B and cost 15 
+    And our order is like this AABBAB               
+    And set items in supermarket                    
+    Then Our total cost should be 105              
+
+  Scenario: Buy itemWithSpecialPrices                                                     
+    Given there is one item with name A and cost 15                                       
+    Given there is one item with name B and cost 25                                       
+    Given there is one special price on item A and if you buy 2 of them you should pay 25 
+    Given there is one special price on item A and if you buy 3 of them you should pay 35 
+    Given there is one special price on item B and if you buy 2 of them you should pay 45 
+    And our order is like this AAABBAABB                                                  
+    And set items in supermarket                                                          
+    Then Our total cost should be 150                                                     
+
+  Scenario: Buy items And itemWithSpecialPrices                                           
+    Given there is one item with name A and cost 20                                       
+    Given there is one special price on item A and if you buy 2 of them you should pay 35 
+    Given there is one item with name B and cost 10                                       
+    And our order is like this AAAB                                                       
+    And set items in supermarket                                                          
+    Then Our total cost should be 65                                                      
+
+  Scenario: Buy items And itemWithCombineSpecialPrices                                     
+    Given there is one item with name A and cost 20                                        
+    Given there is one special price on item A and if you buy 2 of them you should pay 35  
+    Given there is one item with name B and cost 10                                        
+    Given there is one item with name C and cost 15                                        
+    Given there is one special price on item C and if you buy with B then you should pay 5 
+    Given there is one special price on item C and if you buy 2 of them you should pay 10  
+    And our order is like this AAABBCC                                                     
+    And set items in supermarket                                                           
+    Then Our total cost should be 85                                                       
+
+  Scenario: Buy items And itemWithCombineSpecialPrices                                     
+    Given there is one item with name A and cost 20                                        
+    Given there is one special price on item A and if you buy 2 of them you should pay 35  
+    Given there is one item with name B and cost 10                                        
+    Given there is one item with name C and cost 15                                        
+    Given there is one special price on item C and if you buy with B then you should pay 5 
+    Given there is one special price on item C and if you buy 2 of them you should pay 10  
+    And our order is like this AAABBCCCCC                                                  
+    And set items in supermarket                                                           
+    Then Our total cost should be 110                                                      
+
+5 scenarios (5 passed)
+37 steps (37 passed)
+0m0.03s (9.53Mb)
+
+```
+
+### use Makefile
+I also define a Makefile for myself to make life easier and that is like this
+```
+setup:
+	docker build -t supermarket .
+run:
+	docker run -it --rm supermarket
+unitTest:
+	docker run -it --rm supermarket vendor/bin/phpunit
+behatTest:		
+	docker run -it --rm supermarket vendor/bin/behat
+```
+And if you want you can use it for example run the project like this
+```
+make setup
+make run
+```
